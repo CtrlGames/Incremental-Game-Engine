@@ -1,0 +1,15 @@
+body, html {
+	height: 100%;
+	width:100%;
+	margin: 0;
+}
+
+.frame {
+	margin: 0 auto;
+	width: 90%;
+	height: 100%;
+}
+
+.container {
+	margin: 10px;
+}

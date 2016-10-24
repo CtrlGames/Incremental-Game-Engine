@@ -30,21 +30,21 @@ console.log(window.IncrementalEngine);
 IncrementalEngine.prototype = {
 	//Begin a game session with Tick Interval in milliseconds
 	begin(n) {
-		this.gameInterval = window.setInterval(this.onTick, n);
+		this.gameInterval = window.setInterval(this.onTick().bind(this), n);
 	},
 
 	// loops through tickConditions and calls required functions
 	onTick() {
-		Number.isInteger(this.gameTick) ? this.gameTick += 1 : this.gameTick = 0;
+		this.gameTick += Number.isInteger(this.gameTick) ? 1 : 0;
 
 		var event = new Event('tick', {tick: this.gameTick});
 		document.dispatchEvent(event);
 
 		for (var key in this.resources) { // This.resources is undefined?
-			if (this.resources.key.conditions.add > 0) {
+			if (this.resources[key].conditions.add > 0) {
 				this.increaseResource(key, this.resources.key.conditions.add);
 			}
-			if (this.resources.key.conditions.minus > 0) {
+			if (this.resources[key].conditions.minus > 0) {
 				this.decreaseResource(key, this.resources.key.conditions.add);
 			}
 		}

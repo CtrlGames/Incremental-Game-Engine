@@ -109,13 +109,13 @@ var checkConditions = function(){
 		}
 }
 
-var gameTick = function(){
-    tickCounter.innerHTML = gameTick;
+var onGameTick = function(){
+    tickCounter.innerHTML = g.gameTick;
     populateResourceList();
     checkConditions();
 }
 
-document.addEventListener('tick', gameTick);
+document.addEventListener('tick', onGameTick);
 
 // Helper Funcs~
 

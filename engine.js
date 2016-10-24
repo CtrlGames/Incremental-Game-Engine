@@ -1,5 +1,3 @@
-console.log('Engine connected');
-
 (function(){
 // Incremental gaming engine
 
@@ -12,6 +10,8 @@ console.log('Engine connected');
 // 4) set custom "tick" time and process all the ups and downs required.
 // 5) manage multiple queues/pools ( maybe just a new instance or something? )
 // 6) able to retrieve all the data about the pools ( total, increment, ect )
+	// Make Multiple Pools and Multiple tick options. Maybe different timeout vs intervals
+	//  https://jsfiddle.net/kenostik/k91tr882/
 
 
 
@@ -22,6 +22,8 @@ window.IncrementalEngine = function IncrementalEngine() {
 	this.gameTick = 0;
 	this.resources = {};
 	this.tickConditions =[];
+	this.pools = {};
+	this.interval; //Use defineProperty to set up a getter and a setter on the interval
 
 };
 

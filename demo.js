@@ -1,5 +1,3 @@
-console.log('Demo Connected');
-
 var g = new IncrementalEngine();
 
 var begin = document.getElementById('beginGame');
@@ -33,10 +31,24 @@ begin.onclick = function() {
 	beginMyGame();
 }
 
+
+addToPool = function(p, n) {
+	g.pools[p].addToPool((n ? n : 1));
+}
+
+
+
+
+
+
+
+
+
+
 addWood.onclick = function(){
-	g.increaseResource('wood', 1)
+	addToPool('wood', 1);
 	if (g.resources.wood.amount >= 5 && g.resources.food.amount >= 5) {
-		g.createResource('worker');
+		g.addPool({name: "worker"});
 		addWorker.style.display = "inline-block";
 	}
 };
@@ -109,13 +121,13 @@ var checkConditions = function(){
 		}
 }
 
-var onGameTick = function(){
-    tickCounter.innerHTML = g.gameTick;
+var gameTick = function(){
+    tickCounter.innerHTML = gameTick;
     populateResourceList();
     checkConditions();
 }
 
-document.addEventListener('tick', onGameTick);
+document.addEventListener('tick', gameTick);
 
 // Helper Funcs~
 
@@ -126,3 +138,34 @@ disableButton = function(elm){
 enableButton = function(elm) {
 	elm.disabled = false;
 }
+
+
+
+
+// Testing
+
+// Adding pools
+g.addPool({
+  name: "Sir Steve",
+  key: "steve"
+});
+
+g.addPool({
+  name: "MEGA-Wood",
+  key: "wood"
+})
+
+// print on page
+function log(v) {
+  var d = document.querySelector('.log');
+  d.innerHTML += "<div>"+v+"</div>";
+}
+
+Object.keys(g.pools).forEach(e => log(g.pools[e].name +":"+ g.pools[e].amount));
+log("---");
+
+g.pools.wood.addToPool(5);
+g.pools.steve.addToPool(100);
+
+Object.keys(g.pools).forEach(e => log(g.pools[e].name +":"+ g.pools[e].amount));
+log("---");

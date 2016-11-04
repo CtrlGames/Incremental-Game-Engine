@@ -1,12 +1,16 @@
 (function(){
 
+// TODO:   Create Punishment System > When you are at your minimum But increments are called for > call punishment!
+
+
 //Create Game Instance
 window.IncrementalEngine = function IncrementalEngine() {
 
 	this.tickInterval = 0;
 	this.queueInterval = 0;
 	this.pools = {};
-	this.details ={};
+	this.details = {};
+	this.allIncrements = {};
 
 };
 
@@ -22,9 +26,9 @@ var poolPrototype = {
 
   modifyPoolDetails: function(key, val) {
   	if (key === 'resetDetails' ) {
-  		this.increments = n;
+  		this.details = val;
   	} else {
-  		this.increments[key] += val;
+  		this.details[key] += val;
   	}
   },
 
@@ -48,35 +52,34 @@ var poolPrototype = {
   },
 
   modifyPoolAmount: function(n, override) { 
-  	var requirements = this.checkRequirements(n);
   	var pass = this.checkMinandMax(n);
   	n = pass.success ? n : pass.toCapacity;
+  	if (n > 0) {
+  		var requirements = this.checkRequirements(n, true);
 
-  	if (requirements.success || override) {
-  		this.amount += n;
-  		return pass;
+	  	if (requirements.success || override) {
+	  		this.amount += n;
+	  		return pass;
+	  	} else {
+	  		return requirements;
+	  	}
   	} else {
-  		return requirements;
+  		this.amount += n;
+  		return pass
   	}
   },
 
-  checkRequirements: function(n){
-  	if (Object.keys(this.requirements).length) {
-  		var unmetReq = {};
-  		Object.keys(this.requirements).forEach(e => {
-  			if(this.queue.pools[e].amount < this.requirements[e] * n) {
-  				unmetReq[e] = (this.requirements[e] * n) - this.queue.pools[e].amount;
-  			}
-  		});
-  		if (!Object.keys(unmetReq).length) {
-  			Object.keys(this.requirements).forEach(e => this.queue.pools[e].modifyPoolAmount(-(this.requirements[e] * n)));
-  			return {success: true}
-  		} else {
-  			return {succeess: false, unmentRequirements: unmetReq};
-  		}
-  	} else {
-  		return {success: true};
-  	}
+  checkRequirements: function(n, pay){
+	var unmetReq = {};
+	Object.keys(this.requirements).forEach(e => {
+		if(this.queue.pools[e].amount < ((this.requirements[e] * n) + this.queue.pools[e].minimum)) {
+			unmetReq[e] = ((this.requirements[e] * n) + this.queue.pools[e].minimum) - this.queue.pools[e].amount;
+		}
+	});
+	if (!Object.keys(unmetReq).length && pay) {
+		Object.keys(this.requirements).forEach(e => this.queue.pools[e].modifyPoolAmount(-(this.requirements[e] * n)));
+	}
+	return !Object.keys(unmetReq).length ? {success: true} : {succeess: false, unmentRequirements: unmetReq};
   },
 
   checkMinandMax: function(n){
@@ -102,13 +105,7 @@ IncrementalEngine.prototype = {
 	// loops through tickConditions and calls required functions
 	onTick() {
 
-		Object.keys(this.pools).forEach(el => {
-			if (this.pools[el].amount > 0 && this.pools[el].increments) {
-				Object.keys(this.pools[el].increments).forEach(e => {
-						if(this.pools[e].amount <= this.pools[e].maximum && this.pools[e].amount >= this.pools[e].minimum) this.pools[e].modifyPoolAmount(this.pools[el].increments[e] * this.pools[el].amount);
-				})
-			}
-		});
+		this.factorIncrements();
 
 		var event = new Event('tick', this);
 		document.dispatchEvent(event);
@@ -135,10 +132,39 @@ IncrementalEngine.prototype = {
 	    queue: this
   		});
 	  }
+	},
+
+	factorIncrements(){
+		var inc = {}
+		Object.keys(this.pools).forEach(el => {
+			if (this.pools[el].amount > 0 && Object.keys(this.pools[el].increments).length) {
+				Object.keys(this.pools[el].increments).forEach(e => {
+						if(this.pools[e].amount <= this.pools[e].maximum && this.pools[e].amount >= this.pools[e].minimum) {
+								inc[e] ? inc[e] += this.pools[el].increments[e] * this.pools[el].amount : inc[e] = this.pools[el].increments[e] * this.pools[el].amount;
+						} 
+				})
+			}
+		});
+
+		Object.keys(inc).forEach(i => { 
+			if (inc[i] != 0) this.pools[i].modifyPoolAmount(inc[i]); 
+		});
+
+		return inc
 	}
-
-
 };
 
-
 })();
+
+// Helper Functions
+
+function getIncrements(pool) {
+	var inc = {};
+	if (pool.amount > 0 && Object.keys(pool.increments).length) {
+		Object.keys(pool.increments).forEach(e => {
+			if(this.pools[e].amount <= this.pools[e].maximum && this.pools[e].amount >= this.pools[e].minimum) {
+					inc[e] ? inc[e] += this.pools[el].increments[e] : inc[e] = this.pools[el].increments[e]
+			} 
+		})
+	}
+};
